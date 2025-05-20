@@ -41,7 +41,7 @@ func resourceSlackChannelCreate(d *schema.ResourceData, meta interface{}) error 
 
 	channel, err := api.CreateConversation(params)
 	if err != nil {
-		return fmt.Errorf("erro ao criar canal: %w", err)
+		return fmt.Errorf("error creating channel: %w", err)
 	}
 
 	d.SetId(channel.ID)
@@ -58,7 +58,7 @@ func resourceSlackChannelRead(d *schema.ResourceData, meta interface{}) error {
 
 	info, err := api.GetConversationInfo(input)
 	if err != nil {
-		return fmt.Errorf("erro ao ler canal: %w", err)
+		return fmt.Errorf("error reading channel: %w", err)
 	}
 
 	d.Set("name", info.Name)
@@ -75,13 +75,13 @@ func resourceSlackChannelUpdate(d *schema.ResourceData, meta interface{}) error 
 		newName := d.Get("name").(string)
 		_, err := api.RenameConversation(channelID, newName)
 		if err != nil {
-			return fmt.Errorf("erro ao renomear canal: %w", err)
+			return fmt.Errorf("error renaming channel: %w", err)
 		}
 	}
 
 	if d.HasChange("is_private") {
 		newPrivate := d.Get("is_private").(bool)
-		return fmt.Errorf("⚠️ a API do Slack não permite alterar `is_private` via código (desejado: %v)", newPrivate)
+		return fmt.Errorf("⚠️ Slack API does not allow changing `is_private` via code (desired: %v)", newPrivate)
 	}
 
 	return resourceSlackChannelRead(d, meta)
@@ -93,7 +93,7 @@ func resourceSlackChannelDelete(d *schema.ResourceData, meta interface{}) error 
 
 	err := api.ArchiveConversation(channelID)
 	if err != nil {
-		return fmt.Errorf("erro ao arquivar canal: %w", err)
+		return fmt.Errorf("error archiving channel: %w", err)
 	}
 
 	d.SetId("")
