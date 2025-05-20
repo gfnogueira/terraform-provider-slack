@@ -21,6 +21,9 @@ func Provider() *schema.Provider {
 		ResourcesMap: map[string]*schema.Resource{
 			"slack_channel": resourceSlackChannel(),
 		},
+		DataSourcesMap: map[string]*schema.Resource{
+			"slack_user": dataSourceSlackUser(),
+		},
 		ConfigureContextFunc: func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 			token := d.Get("token").(string)
 			client := slack.New(token)
