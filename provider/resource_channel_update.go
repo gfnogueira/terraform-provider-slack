@@ -20,8 +20,14 @@ func resourceSlackChannelUpdate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	if d.HasChange("is_private") {
-		newPrivate := d.Get("is_private").(bool)
-		return fmt.Errorf("⚠️ Slack API does not allow changing `is_private` via code (desired: %v)", newPrivate)
+		oldRaw, newRaw := d.GetChange("is_private")
+		oldPrivate := oldRaw.(bool)
+		newPrivate := newRaw.(bool)
+
+		return fmt.Errorf(
+			"⚠️ Changing 'is_private' from %v to %v is not supported by the Slack API. Please update the channel visibility manually in Slack before applying this change via Terraform",
+			oldPrivate, newPrivate,
+		)
 	}
 
 	return resourceSlackChannelRead(d, meta)
