@@ -20,12 +20,12 @@ func resourceSlackChannelCreate(d *schema.ResourceData, meta interface{}) error 
 
 	channel, err := api.CreateConversation(params)
 	if err != nil {
-		return fmt.Errorf("erro ao criar canal: %w", err)
+		return fmt.Errorf("error creating channel: %w", err)
 	}
 
 	d.SetId(channel.ID)
 
-	// Adiciona membros, se houver
+	// Add members if exists
 	membersRaw := d.Get("members").([]interface{})
 	var members []string
 	for _, m := range membersRaw {
@@ -33,13 +33,13 @@ func resourceSlackChannelCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	if isPrivate && len(members) == 0 {
-		return fmt.Errorf("canais privados precisam ter ao menos um membro listado")
+		return fmt.Errorf("Private channels must have at least one member listed")
 	}
 
 	if len(members) > 0 {
 		_, err := api.InviteUsersToConversation(channel.ID, members...)
 		if err != nil {
-			return fmt.Errorf("erro ao adicionar membros: %w", err)
+			return fmt.Errorf("error add members: %w", err)
 		}
 	}
 

@@ -15,7 +15,7 @@ func dataSourceSlackUser() *schema.Resource {
 
 			user, err := api.GetUserByEmail(email)
 			if err != nil {
-				return fmt.Errorf("erro ao buscar usuário por email: %w", err)
+				return fmt.Errorf("error searching for user by email: %w", err)
 			}
 
 			d.SetId(user.ID)

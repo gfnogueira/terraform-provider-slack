@@ -17,7 +17,7 @@ func resourceSlackChannelRead(d *schema.ResourceData, meta interface{}) error {
 
 	info, err := api.GetConversationInfo(input)
 	if err != nil {
-		return fmt.Errorf("erro ao ler canal: %w", err)
+		return fmt.Errorf("error reading channel: %w", err)
 	}
 
 	d.Set("name", info.Name)

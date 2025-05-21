@@ -13,7 +13,7 @@ func resourceSlackChannelDelete(d *schema.ResourceData, meta interface{}) error 
 
 	err := api.ArchiveConversation(channelID)
 	if err != nil {
-		return fmt.Errorf("erro ao arquivar canal: %w", err)
+		return fmt.Errorf("error archiving channel: %w", err)
 	}
 
 	d.SetId("")
