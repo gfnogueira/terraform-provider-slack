@@ -33,7 +33,7 @@ func resourceSlackChannelCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 
 	if isPrivate && len(members) == 0 {
-		return fmt.Errorf("Private channels must have at least one member listed")
+		return fmt.Errorf("private channels must have at least one member listed")
 	}
 
 	if len(members) > 0 {
