@@ -31,11 +31,12 @@ func resourceSlackChannelCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 	if existingChannel != nil {
 		if existingChannel.IsArchived {
-			log.Printf("[WARN] Channel '%s' already exists and is archived. Reusing it — please unarchive it manually in Slack.", name)
-			d.SetId(existingChannel.ID)
-			return resourceSlackChannelRead(d, meta)
+			log.Printf("[WARN] Channel '%s' exists but is archived. Reusing it — please unarchive it manually in Slack.", name)
+
+			// ❗ wish: move to diag.Warning com CreateContext
 		}
-		return fmt.Errorf("channel '%s' already exists and is active", name)
+		d.SetId(existingChannel.ID)
+		return resourceSlackChannelRead(d, meta)
 	}
 
 	// Create new channel
@@ -43,12 +44,10 @@ func resourceSlackChannelCreate(d *schema.ResourceData, meta interface{}) error 
 		ChannelName: name,
 		IsPrivate:   isPrivate,
 	}
-
 	channel, err := api.CreateConversation(params)
 	if err != nil {
 		return fmt.Errorf("error creating channel: %w", err)
 	}
-
 	d.SetId(channel.ID)
 
 	// Add members to channel
