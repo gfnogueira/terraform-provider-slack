@@ -9,7 +9,8 @@ func resourceSlackChannel() *schema.Resource {
 		Create: resourceSlackChannelCreate,
 		Read:   resourceSlackChannelRead,
 		Update: resourceSlackChannelUpdate,
-		Delete: resourceSlackChannelDelete,
+		//Delete: resourceSlackChannelDelete,
+		DeleteContext: resourceSlackChannelDelete,
 
 		Importer: &schema.ResourceImporter{
 			StateContext: schema.ImportStatePassthroughContext,
