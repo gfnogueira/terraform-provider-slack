@@ -2,6 +2,7 @@ package provider
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/slack-go/slack"
@@ -13,18 +14,31 @@ func resourceSlackChannelCreate(d *schema.ResourceData, meta interface{}) error 
 	name := d.Get("name").(string)
 	isPrivate := d.Get("is_private").(bool)
 
-	// Check if has members added
+	// Validate required members for private channels
 	membersRaw := d.Get("members").([]interface{})
 	var members []string
 	for _, m := range membersRaw {
 		members = append(members, m.(string))
 	}
-
 	if isPrivate && len(members) == 0 {
 		return fmt.Errorf("private channels must have at least one member listed")
 	}
 
-	// create the channel
+	// Check if a channel with the same name already exists
+	existingChannel, err := findChannelByName(api, name)
+	if err != nil {
+		return fmt.Errorf("error checking for existing channel: %w", err)
+	}
+	if existingChannel != nil {
+		if existingChannel.IsArchived {
+			log.Printf("[WARN] Channel '%s' already exists and is archived. Reusing it — please unarchive it manually in Slack.", name)
+			d.SetId(existingChannel.ID)
+			return resourceSlackChannelRead(d, meta)
+		}
+		return fmt.Errorf("channel '%s' already exists and is active", name)
+	}
+
+	// Create new channel
 	params := slack.CreateConversationParams{
 		ChannelName: name,
 		IsPrivate:   isPrivate,
@@ -37,12 +51,15 @@ func resourceSlackChannelCreate(d *schema.ResourceData, meta interface{}) error 
 
 	d.SetId(channel.ID)
 
+	// Add members to channel
 	if len(members) > 0 {
 		_, err := api.InviteUsersToConversation(channel.ID, members...)
 		if err != nil {
 			return fmt.Errorf("error adding members: %w", err)
 		}
+		log.Printf("[INFO] Members added to channel '%s': %v", name, members)
 	}
 
+	log.Printf("[INFO] Slack channel '%s' created successfully", name)
 	return resourceSlackChannelRead(d, meta)
 }
