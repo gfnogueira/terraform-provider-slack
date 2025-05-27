@@ -6,11 +6,9 @@ import (
 
 func resourceSlackChannel() *schema.Resource {
 	return &schema.Resource{
-		//Create: resourceSlackChannelCreate,
 		CreateContext: resourceSlackChannelCreate,
 		ReadContext:   resourceSlackChannelRead,
 		UpdateContext: resourceSlackChannelUpdate,
-		//Delete: resourceSlackChannelDelete,
 		DeleteContext: resourceSlackChannelDelete,
 
 		Importer: &schema.ResourceImporter{
