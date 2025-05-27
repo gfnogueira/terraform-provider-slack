@@ -26,9 +26,10 @@ func resourceSlackChannel() *schema.Resource {
 				Default:  false,
 			},
 			"members": {
-				Type:     schema.TypeList,
+				Type:     schema.TypeSet,
 				Optional: true,
 				Elem:     &schema.Schema{Type: schema.TypeString},
+				Set:      schema.HashString,
 			},
 		},
 	}
