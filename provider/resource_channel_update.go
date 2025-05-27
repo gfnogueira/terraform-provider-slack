@@ -1,13 +1,14 @@
 package provider
 
 import (
-	"fmt"
+	"context"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/slack-go/slack"
 )
 
-func resourceSlackChannelUpdate(d *schema.ResourceData, meta interface{}) error {
+func resourceSlackChannelUpdate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
 	api := meta.(*slack.Client)
 	channelID := d.Id()
 
@@ -15,20 +16,22 @@ func resourceSlackChannelUpdate(d *schema.ResourceData, meta interface{}) error 
 		newName := d.Get("name").(string)
 		_, err := api.RenameConversation(channelID, newName)
 		if err != nil {
-			return fmt.Errorf("error renaming channel: %w", err)
+			return diag.Errorf("error renaming channel: %s", err)
 		}
 	}
 
 	if d.HasChange("is_private") {
-		oldRaw, newRaw := d.GetChange("is_private")
-		oldPrivate := oldRaw.(bool)
-		newPrivate := newRaw.(bool)
+		old, new := d.GetChange("is_private")
+		oldPrivate := old.(bool)
+		newPrivate := new.(bool)
 
-		return fmt.Errorf(
-			"⚠️ Changing 'is_private' from %v to %v is not supported by the Slack API. Please update the channel visibility manually in Slack before applying this change via Terraform",
-			oldPrivate, newPrivate,
-		)
+		if oldPrivate != newPrivate {
+			return diag.Errorf(
+				"Slack does not allow changing 'is_private' via API (Current: %v, desired: %v). Please change manually in Slack.",
+				oldPrivate, newPrivate,
+			)
+		}
 	}
 
-	return resourceSlackChannelRead(d, meta)
+	return resourceSlackChannelRead(ctx, d, meta)
 }

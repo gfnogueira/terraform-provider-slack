@@ -1,14 +1,16 @@
 package provider
 
 import (
+	"context"
 	"fmt"
-	"log"
 
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/slack-go/slack"
 )
 
-func resourceSlackChannelCreate(d *schema.ResourceData, meta interface{}) error {
+func resourceSlackChannelCreate(ctx context.Context, d *schema.ResourceData, meta interface{}) diag.Diagnostics {
+	var diags diag.Diagnostics
 	api := meta.(*slack.Client)
 
 	name := d.Get("name").(string)
@@ -21,22 +23,25 @@ func resourceSlackChannelCreate(d *schema.ResourceData, meta interface{}) error 
 		members = append(members, m.(string))
 	}
 	if isPrivate && len(members) == 0 {
-		return fmt.Errorf("private channels must have at least one member listed")
+		return diag.Errorf("private channels must have at least one member listed")
 	}
 
 	// Check if a channel with the same name already exists
 	existingChannel, err := findChannelByName(api, name)
 	if err != nil {
-		return fmt.Errorf("error checking for existing channel: %w", err)
+		return diag.Errorf("error checking for existing channel: %s", err)
 	}
-	if existingChannel != nil {
-		if existingChannel.IsArchived {
-			log.Printf("[WARN] Channel '%s' exists but is archived. Reusing it — please unarchive it manually in Slack.", name)
 
-			// ❗ wish: move to diag.Warning com CreateContext
-		}
+	if existingChannel != nil {
+		diags = append(diags, diag.Diagnostic{
+			Severity: diag.Warning,
+			Summary:  fmt.Sprintf("Channel '%s' already exists", name),
+			Detail:   fmt.Sprintf("Terraform will reuse this channel. Archived status: %v. Please unarchive it in Slack if necessary.", existingChannel.IsArchived),
+		})
+
 		d.SetId(existingChannel.ID)
-		return resourceSlackChannelRead(d, meta)
+		diags = append(diags, resourceSlackChannelRead(ctx, d, meta)...)
+		return diags
 	}
 
 	// Create new channel
@@ -46,19 +51,18 @@ func resourceSlackChannelCreate(d *schema.ResourceData, meta interface{}) error 
 	}
 	channel, err := api.CreateConversation(params)
 	if err != nil {
-		return fmt.Errorf("error creating channel: %w", err)
+		return diag.Errorf("error creating channel: %s", err)
 	}
 	d.SetId(channel.ID)
 
-	// Add members to channel
+	// Add members
 	if len(members) > 0 {
 		_, err := api.InviteUsersToConversation(channel.ID, members...)
 		if err != nil {
-			return fmt.Errorf("error adding members: %w", err)
+			return diag.Errorf("error adding members: %s", err)
 		}
-		log.Printf("[INFO] Members added to channel '%s': %v", name, members)
 	}
 
-	log.Printf("[INFO] Slack channel '%s' created successfully", name)
-	return resourceSlackChannelRead(d, meta)
+	diags = append(diags, resourceSlackChannelRead(ctx, d, meta)...)
+	return diags
 }
