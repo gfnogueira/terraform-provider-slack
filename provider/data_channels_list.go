@@ -31,6 +31,11 @@ func dataSourceSlackChannels() *schema.Resource {
 				Optional:    true,
 				Description: "If set, filters by channel privacy (true = private, false = public).",
 			},
+			"limit": {
+				Type:        schema.TypeInt,
+				Optional:    true,
+				Description: "Maximum number of channels to return.",
+			},
 			"channels": {
 				Type:     schema.TypeList,
 				Computed: true,
@@ -67,6 +72,10 @@ func dataSourceSlackChannelsRead(ctx context.Context, d *schema.ResourceData, me
 	prefix := d.Get("prefix").(string)
 	includeArchived := d.Get("include_archived").(bool)
 	filterPrivate, hasPrivacy := d.GetOk("is_private")
+	limit := 0
+	if v, ok := d.GetOk("limit"); ok {
+		limit = v.(int)
+	}
 
 	cursor := ""
 	for {
@@ -81,11 +90,9 @@ func dataSourceSlackChannelsRead(ctx context.Context, d *schema.ResourceData, me
 		}
 
 		for _, c := range channels {
-			// Filter by prefix
 			if prefix != "" && !strings.HasPrefix(c.Name, prefix) {
 				continue
 			}
-			// Filter by privacy
 			if hasPrivacy && c.IsPrivate != filterPrivate.(bool) {
 				continue
 			}
@@ -95,9 +102,13 @@ func dataSourceSlackChannelsRead(ctx context.Context, d *schema.ResourceData, me
 				"is_private":  c.IsPrivate,
 				"is_archived": c.IsArchived,
 			})
+
+			if limit > 0 && len(allChannels) >= limit {
+				break
+			}
 		}
 
-		if nextCursor == "" {
+		if nextCursor == "" || (limit > 0 && len(allChannels) >= limit) {
 			break
 		}
 		cursor = nextCursor
