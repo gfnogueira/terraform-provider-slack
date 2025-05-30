@@ -14,8 +14,9 @@ func Provider() *schema.Provider {
 			"token": {
 				Type:        schema.TypeString,
 				Required:    true,
+				Sensitive:   true,
 				DefaultFunc: schema.EnvDefaultFunc("SLACK_TOKEN", nil),
-				Description: "Slack API token",
+				Description: "Slack API Token (starts with xoxb-)",
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
@@ -29,7 +30,30 @@ func Provider() *schema.Provider {
 		},
 		ConfigureContextFunc: func(ctx context.Context, d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 			token := d.Get("token").(string)
+			if token == "" {
+				return nil, diag.Diagnostics{
+					diag.Diagnostic{
+						Severity: diag.Error,
+						Summary:  "Slack token is missing",
+						Detail:   "Please provide a Slack token using the 'token' argument or the SLACK_TOKEN environment variable.",
+					},
+				}
+			}
+
 			client := slack.New(token)
+
+			//Validate token authenticity
+			_, err := client.AuthTest()
+			if err != nil {
+				return nil, diag.Diagnostics{
+					diag.Diagnostic{
+						Severity: diag.Error,
+						Summary:  "Invalid Slack token",
+						Detail:   "Authentication with Slack API failed. Please check if your token is valid and has the correct permissions.",
+					},
+				}
+			}
+
 			return client, nil
 		},
 	}
