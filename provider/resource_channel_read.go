@@ -47,6 +47,13 @@ func resourceSlackChannelRead(ctx context.Context, d *schema.ResourceData, meta 
 	if err := d.Set("is_private", info.IsPrivate); err != nil {
 		return diag.Errorf("error setting 'is_private': %s", err)
 	}
+	if err := d.Set("purpose", info.Purpose.Value); err != nil {
+		return diag.Errorf("error setting 'purpose': %s", err)
+	}
+	
+	if err := d.Set("topic", info.Topic.Value); err != nil {
+		return diag.Errorf("error setting 'topic': %s", err)
+	}
 
 	// Fetch channel members
 	members, _, err := api.GetUsersInConversation(&slack.GetUsersInConversationParameters{

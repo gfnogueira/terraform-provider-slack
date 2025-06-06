@@ -69,6 +69,22 @@ func resourceSlackChannelCreate(ctx context.Context, d *schema.ResourceData, met
 	}
 	d.SetId(channel.ID)
 
+	// Set purpose if provided
+	if v, ok := d.GetOk("purpose"); ok && v.(string) != "" {
+		_, err := api.SetPurposeOfConversation(channel.ID, v.(string))
+		if err != nil {
+			return diag.Errorf("error setting channel purpose: %s", err)
+		}
+	}
+
+	// Set topic if provided
+	if v, ok := d.GetOk("topic"); ok && v.(string) != "" {
+		_, err := api.SetTopicOfConversation(channel.ID, v.(string))
+		if err != nil {
+			return diag.Errorf("error setting channel topic: %s", err)
+		}
+	}
+	
 	// Sync members
 	memberDiags := syncChannelMembers(api, channel.ID, members)
 	diags = append(diags, memberDiags...)

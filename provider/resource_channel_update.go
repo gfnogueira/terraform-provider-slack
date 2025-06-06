@@ -52,6 +52,24 @@ func resourceSlackChannelUpdate(ctx context.Context, d *schema.ResourceData, met
 		diags = append(diags, memberDiags...)
 	}
 
+	if d.HasChange("topic") {
+		newTopic := d.Get("topic").(string)
+		tflog.Debug(ctx, fmt.Sprintf("Updating topic for Slack channel %s to '%s'", channelID, newTopic))
+		_, err := api.SetTopicOfConversation(channelID, newTopic)
+		if err != nil {
+			return diag.Errorf("error updating Slack channel topic: %s", err)
+		}
+	}
+
+	if d.HasChange("purpose") {
+		newPurpose := d.Get("purpose").(string)
+		tflog.Debug(ctx, fmt.Sprintf("Updating purpose for Slack channel %s to '%s'", channelID, newPurpose))
+		_, err := api.SetPurposeOfConversation(channelID, newPurpose)
+		if err != nil {
+			return diag.Errorf("error updating Slack channel purpose: %s", err)
+		}
+	}
+
 	// Refresh state after update
 	stateDiags := resourceSlackChannelRead(ctx, d, meta)
 	diags = append(diags, stateDiags...)

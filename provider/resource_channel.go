@@ -31,6 +31,16 @@ func resourceSlackChannel() *schema.Resource {
 				Elem:     &schema.Schema{Type: schema.TypeString},
 				Set:      schema.HashString,
 			},
+			"purpose": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Purpose (description) of the channel.",
+			},
+			"topic": {
+				Type:        schema.TypeString,
+				Optional:    true,
+				Description: "Topic shown at the top of the channel.",
+			},
 		},
 	}
 }
