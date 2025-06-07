@@ -1,75 +1,104 @@
 # 🚀 terraform-provider-slack
 
-A custom Terraform provider for managing Slack resources such as channels, user groups, and users.
+A custom Terraform provider for managing Slack resources such as channels, users, and user groups with advanced features.
+
+---
 
 ## ⚙️ Features
 
-This provider allows you to interact with the Slack API to manage:
+### ✅ Slack Channels (Resource: `slack_channel`)
+- Create public or private channels
+- Reuse existing channels (including archived ones)
+- Manage members (with automatic drift detection)
+- Set channel **purpose** and **topic**
+- Rename channels via Terraform
+- Detect and warn about extra members not declared in code
 
-- [x] **Slack Channels**  
-  - Create public or private channels
-  - Rename existing channels
-  - Manage channel members
-  - Set channel **purpose** and **topic**
-  - Automatically reuses existing channels (including archived ones)
-- [x] **Slack Users** *(Data Source)*  
-  - Fetch user information by email or ID
-- [x] **Slack Channels** *(Data Sources)*  
-  - Fetch channel by name or ID
-  - Fetch all channels (list)
-- [x] **Slack User Groups** *(Data Source)*  
-  - Fetch user group by handle or name
-- [x] **Slack User Groups** *(Resource)*  
-  > ⚠️ **Note**: Slack user group management is only available on Slack paid plans.
-  - (Planned) Create and update user groups, including name, handle, description, and users
+### ✅ Slack Users
+- `data "slack_user"`: Fetch Slack user by email
+- `data "slack_users"`: Fetch all users, optionally filter by domain
+
+### ✅ Slack Channels (Data Sources)
+- `data "slack_channel"`: Fetch info for a specific channel by name
+- `data "slack_channels"`: List all channels with filters (prefix, type, archived)
+
+### ✅ Slack User Groups (Paid Slack)
+- `data "slack_usergroup"`: Fetch user group by handle
+- *(Planned)* `resource "slack_usergroup"`: Create/update user groups (name, handle, description, users)
+
+### ✅ Channel Membership Diff Tool
+- Detect unmanaged Slack channels (not declared in Terraform)
+- Show them via output for visibility without failing the plan
 
 ---
 
 ## 🧪 Example Usage
 
-### Provider Setup
+### Provider Configuration
 
-```
+```hcl
 provider "slack" {
-  token = var.slack_token  # or use the SLACK_TOKEN environment variable
+  token = var.slack_token
 }
 ```
 
-### Create a Slack Channel
+### Creating a Channel with Members
 
-```
+```hcl
 resource "slack_channel" "devops" {
   name       = "devops-alerts"
   is_private = false
 
   members = [
-    "U1234567890", # user IDs
-    "U0987654321",
+    data.slack_user.alice.id,
+    data.slack_user.bob.id,
   ]
 
   purpose = "Channel for DevOps alerts and automation"
-  topic   = "Alerts, Deployments and Monitoring discussions"
+  topic   = "Deployments and monitoring discussions"
+}
+```
+
+### Fetching All Users
+
+```hcl
+data "slack_users" "all" {}
+
+output "user_emails" {
+  value = [for u in data.slack_users.all.users : u.email]
+}
+```
+
+### Detecting Unmanaged Channels
+
+```hcl
+data "slack_channels" "all" {}
+
+locals {
+  defined_channels = toset([for c in slack_channel.managed : c.name])
+  all_channels     = toset([for c in data.slack_channels.all.channels : c.name])
+  unmanaged        = setsubtract(local.all_channels, local.defined_channels)
+}
+
+output "unmanaged_slack_channels" {
+  value       = local.unmanaged
+  description = "Channels not managed by Terraform"
 }
 ```
 
 ---
 
-## 📦 Install the Provider
+## 📦 Install the Provider (Development)
 
-Build from source:
+Build and link locally:
 
-```
+```sh
 go build -o terraform-provider-slack
-```
 
-Then configure the plugin in your Terraform CLI config:
-
-```
-# ~/.terraformrc or %APPDATA%\terraform.rc
-
+# ~/.terraformrc
 provider_installation {
   dev_overrides {
-    "slack/slack" = "/path/to/compiled/provider"
+    "slack/slack" = "/ABSOLUTE/PATH/TO/terraform-provider-slack"
   }
   direct {}
 }
@@ -77,11 +106,11 @@ provider_installation {
 
 ---
 
-## 🔐 Authentication
+## 🔐 Required Slack Token Scopes
 
-This provider requires a **Slack token** with the following scopes:
+Make sure your Slack token has these scopes:
 
-```
+```text
 users:read
 users:read.email
 channels:read
@@ -91,36 +120,31 @@ groups:write
 usergroups:read
 ```
 
-You can provide it via:
-
-- The `token` argument in the provider block
-- Or the `SLACK_TOKEN` environment variable
-
 ---
 
-## 🔍 Planned Features
-
-- [ ] `slack_usergroup` resource (create/update user groups)
-- [ ] Channel archiving support
-- [ ] Slack bot lifecycle testing
-- [ ] Slack workflows or scheduled messages (stretch goal)
-
----
-
-## 🧠 Development Notes
+## 🧠 Tech Stack
 
 - Built with [terraform-plugin-sdk v2](https://github.com/hashicorp/terraform-plugin-sdk)
 - Uses [slack-go/slack](https://github.com/slack-go/slack)
-- Tested on personal and team Slack workspaces
+- Compatible with Slack Free and Paid workspaces
+
+---
+
+## 🚧 Roadmap
+
+- [ ] `slack_usergroup` resource
+- [ ] Channel archiving lifecycle support
+- [ ] Output user names instead of IDs in diffs
+- [ ] Slack workflow/task automation (exploration)
 
 ---
 
 ## 🤝 Contributing
 
-Pull requests are welcome! If you have ideas or need support for specific resources (like bots or apps), feel free to open an issue.
+Pull requests are welcome! Open issues for bugs or feature requests.
 
 ---
 
 ## 📄 License
 
-MIT — see [LICENSE](./LICENSE) for details.
+MIT — see [LICENSE](./LICENSE)
