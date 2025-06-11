@@ -1,0 +1,17 @@
+# Binaries
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Build outputs
+/dist/
+terraform-provider-slack*
+
+# Local plugins
+/.terraform.d/
+
+# IDE files
+.idea/
+.vscode/
+.DS_Store

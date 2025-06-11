@@ -1,0 +1,24 @@
+name: CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+      - run: gofmt -d $(git ls-files '*.go')
+      - run: go vet ./...
+      - run: go test ./...
+      - uses: golangci/golangci-lint-action@v6
+        with:
+          args: --timeout 5m
+      - uses: goreleaser/goreleaser-action@v5
+        with:
+          version: latest
+          args: release --snapshot --skip-publish --rm-dist

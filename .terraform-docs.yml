@@ -1,0 +1,7 @@
+version: v1
+sort: true
+output: markdown
+sections:
+  hide: []
+  show: []
+output-file: docs/USAGE.md
