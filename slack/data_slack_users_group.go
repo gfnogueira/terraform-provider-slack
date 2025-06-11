@@ -59,7 +59,9 @@ func dataSourceSlackUsersGroupRead(ctx context.Context, d *schema.ResourceData, 
 	}
 
 	sort.Strings(userIDs)
-	d.Set("ids", schema.NewSet(schema.HashString, convertStringSliceToInterface(userIDs)))
+	if err := d.Set("ids", schema.NewSet(schema.HashString, convertStringSliceToInterface(userIDs))); err != nil {
+    	return diag.FromErr(err)
+	}
 	d.SetId(fmt.Sprintf("group-%x", hashStringSlice(userIDs)))
 
 	return diags
