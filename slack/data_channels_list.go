@@ -114,7 +114,9 @@ func dataSourceSlackChannelsRead(ctx context.Context, d *schema.ResourceData, me
 		cursor = nextCursor
 	}
 
-	d.Set("channels", allChannels)
+	if err := d.Set("channels", allChannels); err != nil {
+    	return diag.FromErr(err)
+	}
 	d.SetId(fmt.Sprintf("channels-%d", len(allChannels)))
 
 	return diags
