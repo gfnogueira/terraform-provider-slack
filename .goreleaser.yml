@@ -2,8 +2,7 @@ builds:
   - env:
       - CGO_ENABLED=0
     mod_timestamp: '{{ .CommitTimestamp }}'
-    flags:
-      - -trimpath
+    flags: ["-trimpath"]
     ldflags:
       - '-s -w -X main.version={{.Version}} -X main.commit={{.Commit}}'
     goos: [freebsd, windows, linux, darwin]
@@ -11,11 +10,14 @@ builds:
     ignore:
       - goos: darwin
         goarch: '386'
-    binary: '{{ .ProjectName }}_v{{ .Version }}'
+    binary: terraform-provider-slack
 
 archives:
   - format: zip
     name_template: '{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}'
+    wrap_in_directory: false
+    files:
+      - LICENSE
 
 checksum:
   name_template: '{{ .ProjectName }}_{{ .Version }}_SHA256SUMS'
@@ -25,15 +27,15 @@ signs:
   - artifacts: checksum
     args:
       - "--batch"
-      - "--local-user"
-      - "{{ .Env.GPG_FINGERPRINT }}"
+      - "--local-user={{ .Env.GPG_FINGERPRINT }}"
+      - "--detach-sign"
+      - "--armor"
       - "--output"
       - "${signature}"
-      - "--detach-sign"
       - "${artifact}"
 
 release:
- draft: true
+  draft: false  # ⚠️ true if you want to review on GitHub before publishing
 
 changelog:
   filters:
