@@ -27,3 +27,6 @@ jobs:
         with:
           version: latest
           args: release --snapshot --skip=publish --skip=sign --clean
+        env:
+          GPG_FINGERPRINT: ${{ secrets.GPG_FINGERPRINT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
