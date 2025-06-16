@@ -24,13 +24,17 @@ signs:
   - artifacts: checksum
     args:
       - "--batch"
+      - "--yes"
+      - "--pinentry-mode"
+      - "loopback"
+      - "--passphrase"
+      - "${GPG_PASSPHRASE}"
       - "--local-user={{ .Env.GPG_FINGERPRINT }}"
       - "--detach-sign"
       - "--armor"
       - "--output"
       - "${signature}"
       - "${artifact}"
-
 release:
   draft: false  # ⚠️ true if you want to review on GitHub before publishing
 
