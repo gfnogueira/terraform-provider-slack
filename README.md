@@ -1,34 +1,53 @@
-# 🚀 Terraform Slack Provider
+# Terraform Provider for Slack
 
-A custom Terraform provider to manage **Slack channels**, **users**, and **user groups** with fine control over channel metadata and membership.
+![Terraform](https://img.shields.io/badge/terraform-provider-blue?logo=terraform)
+[![License](https://img.shields.io/github/license/gfnogueira/terraform-provider-slack)](LICENSE)
+[![Terraform Registry](https://img.shields.io/badge/Terraform%20Registry-Slack%20Provider-brightgreen?logo=terraform)](https://registry.terraform.io/providers/gfnogueira/slack/latest)
 
----
-
-## ✅ Features
-
-- **Slack Channels**
-  - Create public/private channels
-  - Set purpose and topic
-  - Manage members via Terraform (with drift detection)
-  - Rename or reuse existing channels
-
-- **Slack Users**
-  - Data source to fetch user by email
-  - Data source to list all users
-
-- **Slack Channels (Data Sources)**
-  - Get a single channel or list all (with filters)
-
-- **Slack User Groups**
-  - Lookup by handle (data source)
-  - *(Planned)* Manage user groups (resource)
-
-- **Channel Membership Diff Tool**
-  - Output unmanaged channels (not declared in code)
+A Terraform provider to manage Slack channels, users, user groups, and more — directly from your infrastructure code.
 
 ---
 
-## 📦 Installation (Local Dev)
+## ⚙️ Requirements
+
+- [Terraform](https://www.terraform.io/downloads.html) >= 1.3.0
+- Go >= 1.22 (only for local development)
+
+---
+
+## 📦 Installation
+
+To use this provider, add the following to your Terraform configuration:
+
+```hcl
+terraform {
+  required_providers {
+    slack = {
+      source  = "gfnogueira/slack"
+      version = "0.1.5"
+    }
+  }
+}
+```
+
+Then run:
+
+```bash
+terraform init
+```
+
+---
+
+## 🔐 Authentication
+
+The provider uses a Slack bot token (with appropriate scopes).  
+Add the token to your environment:
+
+```bash
+export SLACK_TOKEN="xoxb-1234567890-..."
+```
+
+Or use it in the provider block:
 
 ```hcl
 provider "slack" {
@@ -36,51 +55,67 @@ provider "slack" {
 }
 ```
 
-~/.terraformrc:
-```hcl
-provider_installation {
-  dev_overrides {
-    "slack/slack" = "/ABSOLUTE/PATH/TO/terraform-provider-slack"
-  }
-  direct {}
-}
-```
+---
+
+## 🚀 Features
+
+This release supports:
+
+### Resources
+
+- `slack_channel`
+  - Create public/private channels
+  - Update name, topic, and purpose
+  - Manage members
+  - Delete channels
+
+### Data Sources
+
+- `slack_channel`
+- `slack_channels`
+- `slack_user`
+- `slack_users`
+- `slack_users_group`
 
 ---
 
-## 🔐 Slack Token Scopes
+## 📂 Examples
 
-```text
-users:read
-users:read.email
-channels:read
-channels:write
-groups:read
-groups:write
-usergroups:read
-```
+See the [`examples/`](./examples) directory for complete use cases:
+
+- Create a channel with members
+- Set channel topic and purpose
+- Query users and user groups
 
 ---
 
-## 🧪 Example
+## 📄 Documentation
 
-```hcl
-resource "slack_channel" "example" {
-  name       = "alerts"
-  is_private = false
-  topic      = "System alerts"
-  purpose    = "Terraform-managed"
-}
+Documentation for all resources and data sources is available under the [`docs/`](./docs) folder and on the Terraform Registry (once published).
+
+---
+
+## 🛠 Development
+
+```bash
+make build
+make test
 ```
 
 ---
 
 ## 🤝 Contributing
 
-See [CONTRIBUTING.md](./CONTRIBUTING.md)
+Please see [`CONTRIBUTING.md`](./CONTRIBUTING.md).
 
 ---
 
-## 📄 License
+## 🛡 License
 
-[GNU GPLv3](./LICENSE)
+This project is licensed under the [GNU GPLv3](./LICENSE).
+
+---
+
+## 📬 Author
+
+Created and maintained by [@gfnogueira](https://github.com/gfnogueira).
