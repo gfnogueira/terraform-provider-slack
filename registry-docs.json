@@ -1,0 +1,14 @@
+{
+  "name": "slack",
+  "type": "provider",
+  "owner": "gfnogueira",
+  "description": "A Terraform provider for managing Slack resources like channels, users, and user groups.",
+  "source": "github.com/gfnogueira/terraform-provider-slack",
+  "license": "GPL-3.0",
+  "tags": [
+    "slack",
+    "terraform",
+    "chatops",
+    "provider"
+  ]
+}
