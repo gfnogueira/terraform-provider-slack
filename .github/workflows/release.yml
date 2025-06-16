@@ -26,7 +26,17 @@ jobs:
 
       - name: Import GPG private key
         run: |
-          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --yes --passphrase "${{ secrets.GPG_PASSPHRASE }}" --pinentry-mode loopback --import
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | \
+          gpg --batch --yes --pinentry-mode loopback \
+              --passphrase "${{ secrets.GPG_PASSPHRASE }}" \
+              --import
+
+      - name: Unlock GPG key
+        run: |
+          echo "${{ secrets.GPG_PASSPHRASE }}" | \
+          gpg --batch --yes --pinentry-mode loopback \
+              --passphrase-fd 0 \
+              --export-secret-keys > /dev/null
 
       - uses: goreleaser/goreleaser-action@v5
         with:
