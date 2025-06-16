@@ -31,7 +31,6 @@ signs:
       - "${GPG_PASSPHRASE}"
       - "--local-user={{ .Env.GPG_FINGERPRINT }}"
       - "--detach-sign"
-      - "--armor"
       - "--output"
       - "${signature}"
       - "${artifact}"
