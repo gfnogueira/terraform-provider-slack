@@ -22,6 +22,14 @@ Run tests with:
 make test
 ```
 
+## Requirements
+
+- Go >= 1.20
+- Terraform Plugin SDK v2
+- GPG key for releases (if publishing)
+- Slack token for testing
+
+
 ## Reporting Bugs
 
 Use the [bug report template](.github/ISSUE_TEMPLATE/bug_report.md).
