@@ -2,7 +2,7 @@ package test
 
 import (
 	"testing"
-
+	"os"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 )
 
