@@ -15,8 +15,19 @@ jobs:
         with:
           go-version: '1.22'
 
+      - name: Setup GPG for CI
+        run: |
+          mkdir -p ~/.gnupg
+          chmod 700 ~/.gnupg
+          echo "allow-loopback-pinentry" >> ~/.gnupg/gpg-agent.conf
+          echo "use-agent" >> ~/.gnupg/gpg.conf
+          echo "pinentry-mode loopback" >> ~/.gnupg/gpg.conf
+          gpgconf --kill gpg-agent
+
+
       - name: Import GPG private key
-        run: echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --import
+        run: |
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" | gpg --batch --yes --pinentry-mode loopback --import
 
       - uses: goreleaser/goreleaser-action@v5
         with:
