@@ -18,7 +18,6 @@ func resourceSlackChannelCreate(ctx context.Context, d *schema.ResourceData, met
 	isPrivate := d.Get("is_private").(bool)
 
 	// Parse members
-	//membersRaw := d.Get("members").([]interface{})
 	membersRaw := d.Get("members").(*schema.Set).List()
 	var members []string
 	for _, m := range membersRaw {
