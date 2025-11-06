@@ -17,11 +17,10 @@ func resourceSlackChannelCreate(ctx context.Context, d *schema.ResourceData, met
 	name := d.Get("name").(string)
 	isPrivate := d.Get("is_private").(bool)
 
-	// Parse members
-	membersRaw := d.Get("members").(*schema.Set).List()
+	// Parse members - convert from schema.Set to []string
 	var members []string
-	for _, m := range membersRaw {
-		members = append(members, m.(string))
+	if membersRaw, ok := d.GetOk("members"); ok {
+		members = convertSchemaSetToStringSlice(membersRaw.(*schema.Set))
 	}
 
 	// Validate members for private channels

@@ -1,6 +1,5 @@
 # Terraform Provider for Slack
 
-![Terraform](https://img.shields.io/badge/terraform-provider-blue?logo=terraform)
 [![License](https://img.shields.io/github/license/gfnogueira/terraform-provider-slack)](LICENSE)
 [![Terraform Registry](https://img.shields.io/badge/Terraform%20Registry-Slack%20Provider-brightgreen?logo=terraform)](https://registry.terraform.io/providers/gfnogueira/slack/latest)
 

@@ -20,7 +20,8 @@ func Provider() *schema.Provider {
 			},
 		},
 		ResourcesMap: map[string]*schema.Resource{
-			"slack_channel": resourceSlackChannel(),
+			"slack_channel":   resourceSlackChannel(),
+			"slack_usergroup": resourceSlackUsergroup(),
 		},
 		DataSourcesMap: map[string]*schema.Resource{
 			"slack_user":        dataSourceSlackUser(),

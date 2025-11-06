@@ -13,18 +13,54 @@ This resource manages public and private Slack channels.
 
 ## Example Usage
 
+### Basic channel
+
 ```hcl
 resource "slack_channel" "devops" {
   name       = "devops-alerts"
   is_private = false
+  topic      = "Deployments and alerts"
+  purpose    = "Channel for DevOps monitoring"
+}
+```
+
+### Channel with members
+
+```hcl
+data "slack_user" "alice" {
+  email = "alice@example.com"
+}
+
+data "slack_user" "bob" {
+  email = "bob@example.com"
+}
+
+resource "slack_channel" "sre" {
+  name       = "sre-team"
+  is_private = true
 
   members = [
     data.slack_user.alice.id,
     data.slack_user.bob.id,
   ]
 
-  topic   = "Deployments and alerts"
-  purpose = "Channel for DevOps monitoring"
+  topic   = "SRE team channel"
+  purpose = "Site Reliability Engineering discussions"
+}
+```
+
+### Strict member tracking
+
+By default, Terraform only manages the members you declare and ignores manually added users. If you want Terraform to detect drift when users are manually added, use `strict_members`:
+
+```hcl
+resource "slack_channel" "important" {
+  name           = "important-announcements"
+  strict_members = true  # Terraform will show drift if users are manually added
+  
+  members = [
+    data.slack_user.admin.id,
+  ]
 }
 ```
 
@@ -37,8 +73,9 @@ resource "slack_channel" "devops" {
 
 ### Optional
 
-- `is_private` (Boolean)
-- `members` (Set of String)
+- `is_private` (Boolean) Whether the channel is private (true) or public (false). Default: `false`.
+- `members` (Set of String) List of user IDs to add to the channel.
+- `strict_members` (Boolean) If `true`, Terraform will detect drift when users are manually added to the channel. If `false` (default), Terraform only manages the declared members and ignores manually added users. Default: `false`.
 - `purpose` (String) Purpose (description) of the channel.
 - `topic` (String) Topic shown at the top of the channel.
 
@@ -55,6 +92,10 @@ terraform import slack_channel.example C12345678
 
 ## Notes
 
-- Existing channels are reused (including archived).
-- `members` will drift if managed manually outside Terraform.
-- `topic` and `purpose` are optional but useful for documentation.
+- **Existing channels**: If a channel with the same name already exists (including archived), it will be reused instead of creating a new one.
+- **Member management**: 
+  - By default (`strict_members = false`), Terraform only manages the members you declare. Manually added users are ignored.
+  - With `strict_members = true`, Terraform will show drift when users are manually added or removed.
+  - ⚠️ **Important**: The Slack API does NOT allow removing users from channels. Terraform can only add members, not remove them.
+- **Removal limitation**: When you remove a user from the `members` list, Terraform will show a warning but cannot actually remove them from Slack. Users must be removed manually in the Slack UI.
+- `topic` and `purpose` are optional but useful for channel documentation.

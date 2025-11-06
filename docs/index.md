@@ -20,10 +20,11 @@ With this provider, you can automate Slack channel creation, update metadata, sy
 With this provider you can:
 
 - Create, update, and delete public/private channels
+- Create and manage usergroups (@dev-team, @sre, etc.)
 - Sync channel membership (declaratively!)
 - Manage topic and purpose of channels
 - Retrieve Slack users and user groups via data sources
-- Import existing Slack channels to manage them via Terraform
+- Import existing Slack channels and usergroups to manage them via Terraform
 
 ---
 
@@ -62,6 +63,7 @@ channels:write
 groups:read
 groups:write
 usergroups:read
+usergroups:write
 ```
 
 To obtain this token:
@@ -110,16 +112,15 @@ data "slack_channels" "all" {}
 ## Available Resources
 
 - `slack_channel`: Create and manage Slack channels
-- `slack_channel_members`: Manage channel membership (in sync)
-- `slack_channel_topic_purpose`: Manage topic/purpose of a channel
+- `slack_usergroup`: Create and manage Slack usergroups (user groups)
 
 ## Available Data Sources
 
-- `slack_channel`
-- `slack_channels`
-- `slack_user`
-- `slack_users`
-- `slack_usergroup`
+- `slack_channel`: Get information about a specific channel
+- `slack_channels`: List all channels in the workspace
+- `slack_user`: Look up a user by email
+- `slack_users`: List all users in the workspace
+- `slack_users_group`: Convert a list of emails to user IDs
 
 ---
 

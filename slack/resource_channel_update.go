@@ -76,20 +76,3 @@ func resourceSlackChannelUpdate(ctx context.Context, d *schema.ResourceData, met
 
 	return diags
 }
-
-//// convertInterfaceSliceToStringSlice safely converts []interface{} to []string
-//func convertInterfaceSliceToStringSlice(input []interface{}) []string {
-//	result := make([]string, len(input))
-//	for i, v := range input {
-//		result[i] = v.(string)
-//	}
-//	return result
-//}
-
-func convertSchemaSetToStringSlice(set *schema.Set) []string {
-	result := make([]string, 0, set.Len())
-	for _, v := range set.List() {
-		result = append(result, v.(string))
-	}
-	return result
-}

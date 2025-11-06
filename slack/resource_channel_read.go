@@ -81,8 +81,47 @@ func resourceSlackChannelRead(ctx context.Context, d *schema.ResourceData, meta 
 		members = filtered
 	}
 
-	if err := d.Set("members", members); err != nil {
-		return diag.Errorf("error setting 'members': %s", err)
+	// Check if strict_members mode is enabled
+	strictMembers := d.Get("strict_members").(bool)
+	
+	if strictMembers {
+		// STRICT MODE: Track all members in the channel (shows drift)
+		// This will cause Terraform to detect when users are manually added
+		if err := d.Set("members", members); err != nil {
+			return diag.Errorf("error setting 'members': %s", err)
+		}
+		tflog.Debug(ctx, fmt.Sprintf("Strict mode: tracking all %d members in channel", len(members)))
+	} else {
+		// LENIENT MODE (default): Only track members declared in Terraform config
+		// This ignores manually added users and prevents drift
+		configMembers := d.Get("members").(*schema.Set)
+		if configMembers != nil && configMembers.Len() > 0 {
+			desiredMembers := convertSchemaSetToStringSlice(configMembers)
+			
+			// Create a set of actual members for fast lookup
+			actualMembersSet := make(map[string]bool)
+			for _, m := range members {
+				actualMembersSet[m] = true
+			}
+			
+			// Only keep desired members that are actually in the channel
+			managedMembers := make([]string, 0)
+			for _, desired := range desiredMembers {
+				if actualMembersSet[desired] {
+					managedMembers = append(managedMembers, desired)
+				}
+			}
+			
+			if err := d.Set("members", managedMembers); err != nil {
+				return diag.Errorf("error setting 'members': %s", err)
+			}
+			tflog.Debug(ctx, fmt.Sprintf("Lenient mode: tracking %d managed members (out of %d total)", len(managedMembers), len(members)))
+		} else {
+			// If no members configured, set empty list
+			if err := d.Set("members", []string{}); err != nil {
+				return diag.Errorf("error setting 'members': %s", err)
+			}
+		}
 	}
 
 	return diags
